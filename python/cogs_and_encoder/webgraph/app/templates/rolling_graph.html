@@ -1,0 +1,120 @@
+<html>
+    <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <!--<script src="plotly.min.js"></script>-->
+
+    <script src="https://cdn.plot.ly/plotly-2.12.0.min.js"></script>
+    <!-- <link rel="stylesheet" type="text/css" href="styles.css"> -->
+    </head>
+    <body>
+    <div class="navbar"><span>Real-Time Chart with Plotly.js</span></div>
+    <div class="wrapper">
+        <h1>X-axis</h1>
+        <div id="xchart"></div>
+        <h1>Y-axis</h1>
+        <div id="ychart"></div>
+        <h1>Z-axis</h1>
+        <div id="zchart"></div>
+        <script>
+            // async function getData() {
+            //     const response = await fetch('http://magicball:5000/getdata/');
+            //     const accdata = await response.json(); //extract JSON from the http response
+            //     // do something with myJson
+            //     //const the_data = JSON.parse(accdata);
+            //     //alert("var="+ accdata['x'])
+            //     return accdata['x'];
+            // }
+
+            // function res_getData(){
+            //     return resolve(getData());
+            // }
+
+            function getData(){
+                var xhttp = new XMLHttpRequest();
+                var ret = 0;
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        retstr = this.responseText;
+
+                        retobj = JSON.parse(retstr);
+                        ret = retobj;
+
+                    }
+                }
+
+                
+                xhttp.open("GET", "/getdata/", false);
+                xhttp.send();
+
+                return ret;
+                
+            }
+
+
+
+
+            var accobj = getData();
+
+            var xdata = accobj['x'];
+            var ydata = accobj['y'];
+            var zdata = accobj['z'];
+            
+
+            Plotly.newPlot('xchart',[{
+                y:[xdata],
+                type:'line'
+            }]);
+
+            Plotly.newPlot('ychart',[{
+                y:[ydata],
+                type:'line'
+            }]);
+            Plotly.newPlot('zchart',[{
+                y:[zdata],
+                type:'line'
+            }]);
+            
+            var cnt = 0;
+
+            // var test = getData();
+            // alert("test="+test);
+
+            var intv = setInterval(function(){
+                accobj = getData();
+                xdata = accobj['x'];
+                ydata = accobj['y'];
+                zdata = accobj['z'];
+                
+                Plotly.extendTraces('xchart',{ y:[[xdata]]}, [0]);
+                Plotly.extendTraces('ychart',{ y:[[ydata]]}, [0]);
+                Plotly.extendTraces('zchart',{ y:[[zdata]]}, [0]);
+                cnt++;
+                if(cnt > 500) {
+                    Plotly.relayout('xchart',{
+                        xaxis: {
+                            range: [cnt-500,cnt]
+                        }
+                    });
+                    Plotly.relayout('ychart',{
+                        xaxis: {
+                            range: [cnt-500,cnt]
+                        }
+                    });
+                    Plotly.relayout('zchart',{
+                        xaxis: {
+                            range: [cnt-500,cnt]
+                        }
+                    });
+                }
+            },5);
+        </script>
+    </div>
+
+    <div>
+        <form>
+        <input type="button" onclick="clearInterval(intv)" value="Stop" />
+    </form>
+    </div>
+
+    </body>
+</html>
